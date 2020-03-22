@@ -167,6 +167,7 @@
     <ClCompile Include="Source\maze.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\graph.hpp" />
     <ClInclude Include="Source\maze.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

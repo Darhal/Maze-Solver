@@ -47,4 +47,6 @@ private:
 
 	static constexpr int TILE_W = 1;
 	static constexpr int TILE_H = 1;
+
+	void Dijsktra();
 };

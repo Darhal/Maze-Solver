@@ -137,3 +137,8 @@ void Maze::Solve()
 {
 
 }
+
+void Maze::Dijsktra()
+{
+
+}
