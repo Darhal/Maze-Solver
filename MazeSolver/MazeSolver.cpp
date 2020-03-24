@@ -9,6 +9,31 @@
 
 using namespace std;
 
+enum
+{
+	DISJKSTRA = 0,
+	A_STAR = 1,
+};
+
+int HandleEvents(SDL_Event& event)
+{
+	if (event.type == SDL_KEYDOWN) {
+		switch (event.key.keysym.sym) {
+		case SDLK_ESCAPE:
+			
+			break;
+		case SDLK_d:
+			return DISJKSTRA;
+		case SDLK_a:
+			return A_STAR;
+		default:
+			break;
+		}
+	}
+
+	return 2;
+}
+
 int SDL_main(int argc, char* argv[])
 {
 	SDL_Window* window;
@@ -28,7 +53,7 @@ int SDL_main(int argc, char* argv[])
 
 	renderer = SDL_CreateRenderer(window, -1, 0);
 
-	int MAZE_W = 80, MAZE_H = 80;
+	int MAZE_W = 32, MAZE_H = 32;
 	Maze maze(renderer, MAZE_W, MAZE_H);
 
 	while (1) {
@@ -36,8 +61,19 @@ int SDL_main(int argc, char* argv[])
 
 		if (event.type == SDL_QUIT)
 			break;
-		
-		maze.DisplayMaze(renderer);
+
+		int r = HandleEvents(event);
+
+		if (r == DISJKSTRA) {
+			printf("Doing Dijsktra\n");
+			maze.Dijsktra(1, 1);
+		} else if (r == A_STAR) {
+			printf("Doing A*\n");
+			maze.AStarSearch(Pair(1, 1), Pair(maze.GetH() - 3, maze.GetW() - 3));
+		} else {
+			maze.DisplayMaze();
+		}
+
 		SDL_RenderPresent(renderer);
 	}
 

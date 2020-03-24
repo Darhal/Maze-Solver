@@ -3,6 +3,7 @@
 #include <utility>
 #include <algorithm>
 #include <random>
+#include "graph.hpp"
 
 static int random_n(int n) 
 { 
@@ -12,9 +13,26 @@ static int random_n(int n)
 	return dist(rng);
 }
 
+// Creating a shortcut for int, int pair type 
+typedef std::pair<int, int> Pair;
+
+// Creating a shortcut for pair<int, pair<int, int>> type 
+typedef std::pair<double, std::pair<int, int>> pPair;
+
 struct SDL_Renderer;
 struct SDL_Texture;
 struct SDL_Rect;
+
+// A structure to hold the neccesary parameters 
+struct cell
+{
+	// Row and Column index of its parent 
+	// Note that 0 <= i <= ROW-1 & 0 <= j <= COL-1 
+	int parent_i, parent_j;
+	// f = g + h 
+	double f, g, h;
+};
+
 
 class Maze
 {
@@ -33,16 +51,40 @@ public:
 
     void BuildMaze();
 
-    void DisplayMaze(SDL_Renderer* renderer);
+    void DisplayMaze();
 
     MazeArray& GetMazeArray() { return maze; }
 
-	void ColorCase(SDL_Renderer* render, SDL_Rect* rect, int row, int col, int r, int g, int b);
+	void ColorCase(SDL_Rect* rect, int row, int col, int r, int g, int b);
+
+	Graph ConstructGraph();
 
 	void Solve();
+
+	// Dijsktra
+	void Dijsktra(int srcCol, int srcRow);
+
+	std::pair<uint32_t , uint32_t> Get2DCoord(uint32_t coord);
+
+	// A*
+	bool isValid(int row, int col);
+
+	bool isUnBlocked(int row, int col);
+
+	bool isDestination(int row, int col, Pair dest);
+
+	void AStarSearch(Pair src, Pair dest);
+
+	void tracePath(const std::vector<std::vector<cell>>& cellDetails, Pair dest);
+
+	// Utility:
+	int GetH() const { return H; }
+
+	int GetW() const { return W; }
 private:
     MazeArray maze;
 	SDL_Texture* texture;
+	SDL_Renderer* renderer;
     int H, W;
 
 	static constexpr int TILE_W = 1;
