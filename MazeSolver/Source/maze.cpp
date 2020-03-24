@@ -148,6 +148,14 @@ void Maze::DisplayMaze()
 	SDL_RenderCopy(renderer, texture, NULL, NULL);
 }
 
+void Maze::SetCell(wall_t type, int row, int col)
+{
+	if (row < maze.size() && col < maze[0].size())
+		maze[row][col] = type;
+
+	printf("Clicked : (%d, %d)\n", row, col);
+}
+
 void Maze::ColorCase(SDL_Rect* rect, int row, int col, int r, int g, int b)
 {
 	rect->x = row * TILE_W;

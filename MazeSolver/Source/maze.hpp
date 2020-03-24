@@ -81,6 +81,8 @@ public:
 	int GetH() const { return H; }
 
 	int GetW() const { return W; }
+
+	void SetCell(wall_t type, int row, int col);
 private:
     MazeArray maze;
 	SDL_Texture* texture;

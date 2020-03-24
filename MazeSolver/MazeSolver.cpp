@@ -15,7 +15,9 @@ enum
 	A_STAR = 1,
 };
 
-int HandleEvents(SDL_Event& event)
+bool isMouseDown = false;
+
+int HandleEvents(Maze& maze, SDL_Event& event)
 {
 	if (event.type == SDL_KEYDOWN) {
 		switch (event.key.keysym.sym) {
@@ -29,6 +31,16 @@ int HandleEvents(SDL_Event& event)
 		default:
 			break;
 		}
+	} else if (event.type ==  SDL_MOUSEBUTTONDOWN){
+		isMouseDown = true;
+	} else if (event.type == SDL_MOUSEBUTTONUP) {
+		isMouseDown = false;
+	}
+
+	if (isMouseDown) {
+		int divX = (768 / maze.GetW());
+		int divY = (768 / maze.GetH());
+		maze.SetCell(Maze::SPACE, 1 + ((event.motion.x - 1) / divX), 1 + ((event.motion.y - 1) / divY));
 	}
 
 	return 2;
@@ -62,7 +74,7 @@ int SDL_main(int argc, char* argv[])
 		if (event.type == SDL_QUIT)
 			break;
 
-		int r = HandleEvents(event);
+		int r = HandleEvents(maze, event);
 
 		if (r == DISJKSTRA) {
 			printf("Doing Dijsktra\n");
