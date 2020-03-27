@@ -1,9 +1,12 @@
+#pragma once
+
 #include <vector>
 #include <array>
 #include <utility>
 #include <algorithm>
 #include <random>
 #include "graph.hpp"
+#include <SDL.h>
 
 static int random_n(int n) 
 { 
@@ -37,17 +40,19 @@ struct cell
 class Maze
 {
 public:
-	typedef std::vector<std::vector<uint8_t>> MazeArray;
+	typedef std::vector<std::vector<uint32_t>> MazeArray;
 
 	enum wall_t {
-		WALL = 0,
-		SPACE = 1,
-		TRACE = 2,
+		WALL = 0x000000,
+		SPACE = 0xffffff,
+		TRACE = 0xffff00,
 	};
 public:
-    Maze(SDL_Renderer* renderer, int h = 32, int w = 32);
+    Maze();
 
-    void DigMaze(int r, int c, uint8_t* wall);
+	void Init(SDL_Renderer* renderer, int h = 32, int w = 32);
+
+    void DigMaze(int r, int c, uint32_t* wall);
 
     void BuildMaze();
 
@@ -56,6 +61,8 @@ public:
     MazeArray& GetMazeArray() { return maze; }
 
 	void ColorCase(SDL_Rect* rect, int row, int col, int r, int g, int b);
+
+	void ColorCase(SDL_Rect* rect, int row, int col, uint32_t color);
 
 	Graph ConstructGraph();
 
@@ -78,15 +85,18 @@ public:
 	void tracePath(const std::vector<std::vector<cell>>& cellDetails, Pair dest);
 
 	// Utility:
-	int GetH() const { return H; }
+	int GetH() const { return H - 2; }
 
-	int GetW() const { return W; }
+	int GetW() const { return W - 2; }
 
 	void SetCell(wall_t type, int row, int col);
+
+	SDL_Rect& getRect() { return texture_sz; }
 private:
     MazeArray maze;
 	SDL_Texture* texture;
 	SDL_Renderer* renderer;
+	SDL_Rect texture_sz;
     int H, W;
 
 	static constexpr int TILE_W = 1;

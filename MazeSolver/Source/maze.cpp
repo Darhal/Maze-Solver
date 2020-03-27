@@ -22,16 +22,21 @@ static int minDistance(int dist[], bool sptSet[], int V)
 	return min_index;
 }
 
-Maze::Maze(SDL_Renderer* renderer, int h, int w) :
-	maze(h, std::vector<uint8_t>(w, wall_t::WALL)), 
-	texture(NULL), renderer(renderer),
-	H(h), W(w)
+Maze::Maze() : texture_sz{ 0, 0, 768, 768 }
 {
-	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w - 1, h - 1);
+}
+
+void Maze::Init(SDL_Renderer* renderer, int h, int w)
+{
+	W = w;
+	H = h;
+	maze = MazeArray(H, std::vector<uint32_t>(W, wall_t::WALL));
+	this->renderer = renderer;
+	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, W - 1, H - 1);
 	this->BuildMaze();
 }
 
-void Maze::DigMaze(int r, int c, uint8_t* wall)
+void Maze::DigMaze(int r, int c, uint32_t* wall)
 {
 	// Are we out of bounds?
 	if (r < 0 || c < 0 || r >= maze.size() || c >= maze[0].size())
@@ -61,7 +66,7 @@ void Maze::DigMaze(int r, int c, uint8_t* wall)
 		// m[rr][cc] will be the cell that we'll try to dig.
 		int rr = r;
 		int cc = c;
-		uint8_t* wall;
+		uint32_t* wall;
 
 		switch (D[i]) {
 		case 'N':
@@ -132,28 +137,20 @@ void Maze::DisplayMaze()
 
 	for (int row = 0; row < maze.size(); row++) {
 		for (int col = 0; col < maze[0].size(); col++) {
-			int color = 0x00;
-
-			if (maze[row][col] == wall_t::SPACE) {
-				color = 0xFF;
-			}
-			
-			this->ColorCase(&r, row, col, color, color, color);
+			this->ColorCase(&r, row, col, maze[row][col]);
 		}
 	}
 
 	this->ColorCase(&r, 1, 1, 0xFF, 0x0, 0x0);
 	this->ColorCase(&r, H - 3,  W - 3, 255, 135, 0);
 	SDL_SetRenderTarget(renderer, NULL);
-	SDL_RenderCopy(renderer, texture, NULL, NULL);
+	SDL_RenderCopy(renderer, texture, NULL, &texture_sz);
 }
 
 void Maze::SetCell(wall_t type, int row, int col)
 {
 	if (row < maze.size() && col < maze[0].size())
 		maze[row][col] = type;
-
-	printf("Clicked : (%d, %d)\n", row, col);
 }
 
 void Maze::ColorCase(SDL_Rect* rect, int row, int col, int r, int g, int b)
@@ -162,6 +159,15 @@ void Maze::ColorCase(SDL_Rect* rect, int row, int col, int r, int g, int b)
 	rect->y = col * TILE_H;
 	SDL_SetRenderDrawColor(renderer, r, g, b, 0x00);
 	SDL_RenderFillRect(renderer, rect);
+}
+
+void Maze::ColorCase(SDL_Rect* rect, int row, int col, uint32_t color)
+{
+	this->ColorCase(rect, row, col, 
+		(color & 0xff0000) >> 16,
+		(color & 0x00ff00) >> 8,
+		(color & 0x0000ff)
+	);
 }
 
 std::pair<uint32_t, uint32_t> Maze::Get2DCoord(uint32_t coord)
@@ -265,7 +271,7 @@ void Maze::Dijsktra(int srcCol, int srcRow)
 				printf("Next vertex : (%d, %d)\n", pair.first, pair.second);
 				this->ColorCase(&r, pair.first, pair.second, 0x00, 0xFF, 0x00);
 				SDL_SetRenderTarget(renderer, NULL);
-				SDL_RenderCopy(renderer, texture, NULL, NULL);
+				SDL_RenderCopy(renderer, texture, NULL, &texture_sz);
 				SDL_RenderPresent(renderer);
 			}
 		}
@@ -283,7 +289,7 @@ void Maze::Dijsktra(int srcCol, int srcRow)
 	this->ColorCase(&r, 1, 1, 0xFF, 0x0, 0x0);
 	this->ColorCase(&r, H - 3, W - 3, 255, 135, 0);
 	SDL_SetRenderTarget(renderer, NULL);
-	SDL_RenderCopy(renderer, texture, NULL, NULL);
+	SDL_RenderCopy(renderer, texture, NULL, &texture_sz);
 	SDL_RenderPresent(renderer);
 
 	while (!path.empty()) {
@@ -293,7 +299,7 @@ void Maze::Dijsktra(int srcCol, int srcRow)
 		printf("Path : (%d, %d)\n", pair.first, pair.second);
 		this->ColorCase(&r, pair.first, pair.second, 0x00, 0x00, 0xFF);
 		SDL_SetRenderTarget(renderer, NULL);
-		SDL_RenderCopy(renderer, texture, NULL, NULL);
+		SDL_RenderCopy(renderer, texture, NULL, &texture_sz);
 		SDL_RenderPresent(renderer);
 		path.pop();
 
@@ -378,7 +384,7 @@ void Maze::tracePath(const std::vector<std::vector<cell>>& cellDetails, Pair des
 	this->ColorCase(&r, 1, 1, 0xFF, 0x0, 0x0);
 	this->ColorCase(&r, H - 3, W - 3, 255, 135, 0);
 	SDL_SetRenderTarget(renderer, NULL);
-	SDL_RenderCopy(renderer, texture, NULL, NULL);
+	SDL_RenderCopy(renderer, texture, NULL, &texture_sz);
 	SDL_RenderPresent(renderer);
 
 	std::this_thread::sleep_for(std::chrono::seconds(5));
@@ -482,7 +488,7 @@ void Maze::AStarSearch(Pair src, Pair dest)
 		SDL_SetRenderTarget(renderer, texture);
 		this->ColorCase(&r, i, j, 0x00, 0xFF, 0x00);
 		SDL_SetRenderTarget(renderer, NULL);
-		SDL_RenderCopy(renderer, texture, NULL, NULL);
+		SDL_RenderCopy(renderer, texture, NULL, &texture_sz);
 		SDL_RenderPresent(renderer);
 		std::this_thread::sleep_for(std::chrono::milliseconds(5));
 
