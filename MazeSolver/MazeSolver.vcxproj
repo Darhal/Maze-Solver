@@ -166,10 +166,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Source\AStar.cpp" />
+    <ClCompile Include="Source\Dijsktra.cpp" />
     <ClCompile Include="Source\MazeSolver.cpp" />
     <ClCompile Include="Source\maze.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\AStar.hpp" />
+    <ClInclude Include="Source\Dijsktra.hpp" />
     <ClInclude Include="Source\MazeSolver.hpp" />
     <ClInclude Include="Source\graph.hpp" />
     <ClInclude Include="Source\maze.hpp" />

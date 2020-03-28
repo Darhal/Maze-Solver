@@ -1,4 +1,6 @@
 #include "MazeSolver.hpp"
+#include "AStar.hpp"
+#include "Dijsktra.hpp"
 #include <thread>
 #include <chrono>
 
@@ -28,7 +30,7 @@ void MazeSolver::Init()
 void MazeSolver::Loop()
 {
 	for (uint32_t i = 0, j = 0; i < sizeof(Text) * MAX_MENU; i += sizeof(Text), j++) {
-		Text* text = new (&menu[i]) Text(renderer, font, texts[j], 0, 50);
+		Text* text = new (&menu[i]) Text(renderer, font, texts[j], 0, 25);
 		SDL_Rect& txt_rct = text->getRect();
 		txt_rct.x = (maze.getRect().w + Window_W - text->getRect().w) / 2;
 
@@ -56,10 +58,12 @@ void MazeSolver::Loop()
 
 		if (r == DISJKSTRA) {
 			printf("Doing Dijsktra\n");
-			maze.Dijsktra(maze.getStart(), maze.getEnd());
+			Dijsktra dijsktra(&maze);
+			dijsktra.Start(maze.getStart(), maze.getEnd());
 		} else if (r != -1) {
 			printf("Doing A*\n");
-			maze.AStarSearch(r - 1, maze.getStart(), maze.getEnd());
+			AStar astar(&maze);
+			astar.AStarSearch((AStar::distance_t)(r - 1), maze.getStart(), maze.getEnd());
 		} else {
 			maze.DisplayMaze();
 		}

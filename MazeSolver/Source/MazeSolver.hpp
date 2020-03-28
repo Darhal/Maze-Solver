@@ -13,6 +13,7 @@ public:
 		DISJKSTRA = 0,
 		A_STAR_EUC = 1,
 		A_STAR_MAN = 2,
+		CAT_MOUSE = 3,
 	};
 public:
 	MazeSolver(int Window_W = 1280, int Window_H = 768, int Maze_W = 32, int Maze_H = 32);
@@ -25,11 +26,11 @@ public:
 
 	void Clean();
 private:
-	constexpr static int MAX_MENU = 12;
+	constexpr static int MAX_MENU = 13;
 
 	char menu[sizeof(Text) * MAX_MENU];
 	std::string texts[MAX_MENU] = { "Dijkstra", "A* Euclidean", "A* Manhattan", "Empty Cell", "Add Wall", 
-		"Add Stone", "Add Sand", "Add Water", "Re-Generate Maze", "Clear Maze", "Edit Start", "Edit End"};
+		"Add Stone", "Add Sand", "Add Water", "Re-Generate Maze", "Clear Maze", "Edit Start", "Edit End", "Mouse & The Cat"};
 
 	SDL_Window* window;
 	SDL_Renderer* renderer;

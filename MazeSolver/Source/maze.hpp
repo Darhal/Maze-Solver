@@ -8,7 +8,7 @@
 #include "graph.hpp"
 #include <SDL.h>
 
-static int random_n(int n) 
+static uint32_t random_n(uint32_t n)
 { 
 	std::random_device dev;
 	std::mt19937 rng(dev());
@@ -25,16 +25,6 @@ typedef std::pair<double, std::pair<int, int>> pPair;
 struct SDL_Renderer;
 struct SDL_Texture;
 struct SDL_Rect;
-
-// A structure to hold the neccesary parameters 
-struct cell
-{
-	// Row and Column index of its parent 
-	// Note that 0 <= i <= ROW-1 & 0 <= j <= COL-1 
-	int parent_i, parent_j;
-	// f = g + h 
-	double f, g, h;
-};
 
 class Maze
 {
@@ -54,6 +44,8 @@ public:
 public:
     Maze();
 
+	// Maze generation and clearing functions:
+
 	void Init(SDL_Renderer* renderer, int h = 32, int w = 32);
 
     void DigMaze(int r, int c, uint32_t* wall);
@@ -68,33 +60,13 @@ public:
 
     void DisplayMaze();
 
-    MazeArray& GetMazeArray() { return maze; }
+	// Cat & Mouse functions:
+	void CatAndMouse(const Pair& start, const Pair& end);
 
-	void ColorCase(SDL_Rect* rect, int row, int col, int r, int g, int b);
-
-	void ColorCase(SDL_Rect* rect, int row, int col, uint32_t color);
-
+	// Dijsktra functions:
 	Graph ConstructGraph();
 
-	void Solve();
-
-	// Dijsktra
-	void Dijsktra(Pair start, Pair end);
-
-	std::pair<uint32_t , uint32_t> Get2DCoord(uint32_t coord);
-
-	// A*
-	bool isValid(int row, int col);
-
-	bool isUnBlocked(int row, int col);
-
-	bool isDestination(int row, int col, Pair dest);
-
-	void AStarSearch(int type, Pair src, Pair dest);
-
-	void tracePath(const std::vector<std::vector<cell>>& cellDetails, Pair dest);
-
-	// Utility:
+	// Utility functions:
 	int GetH() const { return H - 2; }
 
 	int GetW() const { return W - 2; }
@@ -103,7 +75,7 @@ public:
 
 	SDL_Rect& getRect() { return texture_sz; }
 
-	int getCellCost(int row, int col) const;
+	uint32_t getCellCost(int row, int col) const;
 
 	wall_t getRandomCell();
 
@@ -114,6 +86,14 @@ public:
 	const std::pair<uint32_t, uint32_t>& getStart() { return start; };
 
 	const std::pair<uint32_t, uint32_t>& getEnd() { return end; };
+
+	std::pair<uint32_t, uint32_t> Get2DCoord(uint32_t coord);
+
+	MazeArray& GetMazeArray() { return maze; }
+
+	void ColorCase(SDL_Rect* rect, int row, int col, int r, int g, int b);
+
+	void ColorCase(SDL_Rect* rect, int row, int col, uint32_t color);
 private:
     MazeArray maze;
 	SDL_Texture* texture;
@@ -124,4 +104,7 @@ private:
 
 	static constexpr int TILE_W = 1;
 	static constexpr int TILE_H = 1;
+
+	friend class AStar;
+	friend class Dijsktra;
 };
