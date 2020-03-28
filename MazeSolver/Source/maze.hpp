@@ -36,7 +36,6 @@ struct cell
 	double f, g, h;
 };
 
-
 class Maze
 {
 public:
@@ -45,6 +44,11 @@ public:
 	enum wall_t {
 		WALL = 0x000000,
 		SPACE = 0xffffff,
+
+		STONE = 0xabaeaf,
+		SAND = 0xDBD1B4,
+		WATER = 0xadd8e6,
+
 		TRACE = 0xffff00,
 	};
 public:
@@ -55,6 +59,12 @@ public:
     void DigMaze(int r, int c, uint32_t* wall);
 
     void BuildMaze();
+
+	void Clear();
+
+	void Reset();
+
+	void Generate();
 
     void DisplayMaze();
 
@@ -69,7 +79,7 @@ public:
 	void Solve();
 
 	// Dijsktra
-	void Dijsktra(int srcCol, int srcRow);
+	void Dijsktra(Pair start, Pair end);
 
 	std::pair<uint32_t , uint32_t> Get2DCoord(uint32_t coord);
 
@@ -80,7 +90,7 @@ public:
 
 	bool isDestination(int row, int col, Pair dest);
 
-	void AStarSearch(Pair src, Pair dest);
+	void AStarSearch(int type, Pair src, Pair dest);
 
 	void tracePath(const std::vector<std::vector<cell>>& cellDetails, Pair dest);
 
@@ -92,15 +102,26 @@ public:
 	void SetCell(wall_t type, int row, int col);
 
 	SDL_Rect& getRect() { return texture_sz; }
+
+	int getCellCost(int row, int col) const;
+
+	wall_t getRandomCell();
+
+	void setStart(const std::pair<uint32_t, uint32_t>& s) { start = s; };
+
+	void setEnd(const std::pair<uint32_t, uint32_t>& e) { end = e; };
+
+	const std::pair<uint32_t, uint32_t>& getStart() { return start; };
+
+	const std::pair<uint32_t, uint32_t>& getEnd() { return end; };
 private:
     MazeArray maze;
 	SDL_Texture* texture;
 	SDL_Renderer* renderer;
 	SDL_Rect texture_sz;
+	std::pair<uint32_t, uint32_t> start, end;
     int H, W;
 
 	static constexpr int TILE_W = 1;
 	static constexpr int TILE_H = 1;
-
-	void Dijsktra();
 };

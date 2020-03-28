@@ -22,18 +22,77 @@ static int minDistance(int dist[], bool sptSet[], int V)
 	return min_index;
 }
 
-Maze::Maze() : texture_sz{ 0, 0, 768, 768 }
+Maze::Maze() : texture_sz{ 0, 0, 768, 768 }, start(1, 1), end(1, 1)
 {
+}
+
+Maze::wall_t Maze::getRandomCell()
+{
+	int pick = random_n(101);
+
+	if (pick <= 50) {
+		return wall_t::SPACE;
+	} else if (pick > 50 && pick <= 80) {
+		return wall_t::STONE;
+	} else if (pick > 80 && pick <= 95) {
+		return wall_t::SAND;
+	} else if (pick > 95 && pick <= 100) {
+		return wall_t::WATER;
+	}
+
+	return wall_t::SPACE;
+}
+
+int Maze::getCellCost(int row, int col) const
+{
+	switch (maze[row][col]) {
+	case wall_t::SPACE:
+		return 1;
+	case wall_t::STONE:
+		return 2;
+	case wall_t::SAND:
+		return 3;
+	case wall_t::WATER:
+		return 4;
+	}
+}
+
+void Maze::Clear()
+{
+	maze = MazeArray(H, std::vector<uint32_t>(W, wall_t::WALL));
+}
+
+
+void Maze::Reset()
+{
+	maze = MazeArray(H, std::vector<uint32_t>(W, wall_t::SPACE));
+
+	maze[0] = std::vector<uint32_t>(W, wall_t::WALL);
+	maze[H - 2] = std::vector<uint32_t>(W, wall_t::WALL);
+
+	for (int i = 0; i < H; i++) {
+		maze[i][0] = wall_t::WALL;
+		maze[i][W - 2] = wall_t::WALL;
+	}
+}
+
+void Maze::Generate()
+{
+	this->BuildMaze();
 }
 
 void Maze::Init(SDL_Renderer* renderer, int h, int w)
 {
 	W = w;
 	H = h;
+
+	start = std::pair<uint32_t, uint32_t>(1, 1);
+	end = std::pair<uint32_t, uint32_t>(W - 3, H - 3);
+
 	maze = MazeArray(H, std::vector<uint32_t>(W, wall_t::WALL));
 	this->renderer = renderer;
 	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, W - 1, H - 1);
-	this->BuildMaze();
+	this->Generate();
 }
 
 void Maze::DigMaze(int r, int c, uint32_t* wall)
@@ -50,11 +109,11 @@ void Maze::DigMaze(int r, int c, uint32_t* wall)
 	// between recursive calls.  Knock it down.
 	// (wall == NULL for the 1st invocation of this function.)
 	if (wall) {
-		*wall = wall_t::SPACE;
+		*wall = getRandomCell();
 	}
 
 	// Dig this cell.
-	maze[r][c] = wall_t::SPACE;
+	maze[r][c] = getRandomCell();
 	// this->DisplayMaze();
 
 	// Randomly decide the order in which we explore the directions
@@ -141,8 +200,8 @@ void Maze::DisplayMaze()
 		}
 	}
 
-	this->ColorCase(&r, 1, 1, 0xFF, 0x0, 0x0);
-	this->ColorCase(&r, H - 3,  W - 3, 255, 135, 0);
+	this->ColorCase(&r, start.first, start.second, 0xFF, 0x0, 0x0);
+	this->ColorCase(&r, end.first, end.second, 255, 135, 0);
 	SDL_SetRenderTarget(renderer, NULL);
 	SDL_RenderCopy(renderer, texture, NULL, &texture_sz);
 }
@@ -191,9 +250,9 @@ Graph Maze::ConstructGraph()
 				int ncol = col;
 				int nrow = row + offset;
 			
-				if (nrow >= 0 && nrow < maze.size() && maze[nrow][ncol] == wall_t::SPACE) {
+				if (nrow >= 0 && nrow < maze.size() && maze[nrow][ncol] != wall_t::WALL) {
 					int nvert_id = nrow * maze[0].size() + ncol;
-					graph.AddEdgeToVertex(vert_id, nvert_id);
+					graph.AddEdgeToVertex(vert_id, nvert_id, getCellCost(nrow, col));
 				}
 			}
 
@@ -201,9 +260,9 @@ Graph Maze::ConstructGraph()
 				int ncol = col + offset;
 				int nrow = row;
 
-				if (ncol >= 0 && ncol < maze[0].size() && maze[nrow][ncol] == wall_t::SPACE) {
+				if (ncol >= 0 && ncol < maze[0].size() && maze[nrow][ncol] != wall_t::WALL) {
 					int nvert_id = nrow * maze[0].size() + ncol;
-					graph.AddEdgeToVertex(vert_id, nvert_id);
+					graph.AddEdgeToVertex(vert_id, nvert_id, getCellCost(nrow, col));
 				}
 			}
 		}
@@ -217,9 +276,9 @@ void Maze::Solve()
 
 }
 
-void Maze::Dijsktra(int srcCol, int srcRow)
+void Maze::Dijsktra(Pair start, Pair end)
 {
-	int src = srcRow * maze[0].size() + srcCol;
+	int src = start.first * maze[0].size() + start.second;
 	int V = H * W;
 	Graph graph = ConstructGraph();
 	int* dist = new int[V]; // The output array.  dist[i] will hold the shortest 
@@ -262,13 +321,12 @@ void Maze::Dijsktra(int srcCol, int srcRow)
 			// u to v, and total weight of path from src to  v through u is 
 			// smaller than current value of dist[v] 
 
-			if (!sptSet[v] && graph.IsNext(u, v) && dist[u] != INT_MAX && dist[u] + 1 < dist[v]) {
-				dist[v] = dist[u] + 1;
+			if (!sptSet[v] && graph.IsNext(u, v) && dist[u] != INT_MAX && dist[u] + graph.GetCost(u, v) < dist[v]) {
+				dist[v] = dist[u] + graph.GetCost(u, v);
 				parent[v] = u;
 
 				SDL_SetRenderTarget(renderer, texture);
 				auto pair = this->Get2DCoord(v);
-				printf("Next vertex : (%d, %d)\n", pair.first, pair.second);
 				this->ColorCase(&r, pair.first, pair.second, 0x00, 0xFF, 0x00);
 				SDL_SetRenderTarget(renderer, NULL);
 				SDL_RenderCopy(renderer, texture, NULL, &texture_sz);
@@ -278,7 +336,7 @@ void Maze::Dijsktra(int srcCol, int srcRow)
 	}
 
 	std::stack<int> path;
-	int j = (H - 3) * maze[0].size() + (W - 3);
+	int j = end.first * maze[0].size() + end.second;
 	printf("Parent : (%d, %d)\n", j, parent[j]);
 	while (parent[j] != -1) {
 		path.emplace(j);
@@ -286,8 +344,8 @@ void Maze::Dijsktra(int srcCol, int srcRow)
 	}
 
 	SDL_SetRenderTarget(renderer, texture);
-	this->ColorCase(&r, 1, 1, 0xFF, 0x0, 0x0);
-	this->ColorCase(&r, H - 3, W - 3, 255, 135, 0);
+	this->ColorCase(&r, start.first, start.second, 0xFF, 0x0, 0x0);
+	this->ColorCase(&r, end.first, end.second, 255, 135, 0);
 	SDL_SetRenderTarget(renderer, NULL);
 	SDL_RenderCopy(renderer, texture, NULL, &texture_sz);
 	SDL_RenderPresent(renderer);
@@ -298,6 +356,8 @@ void Maze::Dijsktra(int srcCol, int srcRow)
 		auto pair = this->Get2DCoord(p);
 		printf("Path : (%d, %d)\n", pair.first, pair.second);
 		this->ColorCase(&r, pair.first, pair.second, 0x00, 0x00, 0xFF);
+		this->ColorCase(&r, start.first, start.second, 0xFF, 0x0, 0x0);
+		this->ColorCase(&r, end.first, end.second, 255, 135, 0);
 		SDL_SetRenderTarget(renderer, NULL);
 		SDL_RenderCopy(renderer, texture, NULL, &texture_sz);
 		SDL_RenderPresent(renderer);
@@ -306,6 +366,9 @@ void Maze::Dijsktra(int srcCol, int srcRow)
 		std::this_thread::sleep_for(std::chrono::milliseconds(5));
 	}
 
+	delete[] dist;
+	delete[] sptSet;
+	delete[] parent;
 	std::this_thread::sleep_for(std::chrono::seconds(5));
 }
 
@@ -324,7 +387,7 @@ bool Maze::isValid(int row, int col)
 bool Maze::isUnBlocked(int row, int col)
 {
 	// Returns true if the cell is not blocked else false 
-	if (maze[row][col] == wall_t::SPACE)
+	if (maze[row][col] != wall_t::WALL)
 		return true;
 	else
 		return false;
@@ -341,11 +404,15 @@ bool Maze::isDestination(int row, int col, Pair dest)
 }
 
 // A Utility Function to calculate the 'h' heuristics. 
-double calculateHValue(int row, int col, Pair dest)
+double calculateHValue(int type, int row, int col, Pair dest)
 {
-	// Return using the distance formula 
-	return ((double)sqrt((row - dest.first)*(row - dest.first)
-		+ (col - dest.second)*(col - dest.second)));
+	// Return using the distance formula  based on the type:
+	if (type == 0) { // Euclidean
+		return ((double)sqrt((row - dest.first)*(row - dest.first)
+			+ (col - dest.second)*(col - dest.second)));
+	} else if (type == 1) { // Manhattan
+		return (double)(std::abs(row - dest.first) + std::abs(col - dest.second));
+	}
 }
 
 
@@ -381,8 +448,8 @@ void Maze::tracePath(const std::vector<std::vector<cell>>& cellDetails, Pair des
 		printf("-> (%d,%d) ", p.first, p.second);
 	}
 
-	this->ColorCase(&r, 1, 1, 0xFF, 0x0, 0x0);
-	this->ColorCase(&r, H - 3, W - 3, 255, 135, 0);
+	this->ColorCase(&r, start.first, start.second, 0xFF, 0x0, 0x0);
+	this->ColorCase(&r, end.first, end.second, 255, 135, 0);
 	SDL_SetRenderTarget(renderer, NULL);
 	SDL_RenderCopy(renderer, texture, NULL, &texture_sz);
 	SDL_RenderPresent(renderer);
@@ -394,10 +461,15 @@ void Maze::tracePath(const std::vector<std::vector<cell>>& cellDetails, Pair des
 // A Function to find the shortest path between 
 // a given source cell to a destination cell according 
 // to A* Search Algorithm 
-void Maze::AStarSearch(Pair src, Pair dest)
+void Maze::AStarSearch(int type, Pair src, Pair dest)
 {
 	int ROW = H;
 	int COL = W;
+	constexpr Pair coords[] = {
+		Pair(-1, -1), Pair(-1, 0), Pair(-1, 1),
+		Pair(0, -1)              , Pair(0, 1),
+		Pair(1, -1), Pair(1, 0)  , Pair(1, 1),
+	};
 
 	// If the source is out of range 
 	if (isValid(src.first, src.second) == false) {
@@ -487,6 +559,8 @@ void Maze::AStarSearch(Pair src, Pair dest)
 
 		SDL_SetRenderTarget(renderer, texture);
 		this->ColorCase(&r, i, j, 0x00, 0xFF, 0x00);
+		this->ColorCase(&r, start.first, start.second, 0xFF, 0x0, 0x0);
+		this->ColorCase(&r, end.first, end.second, 255, 135, 0);
 		SDL_SetRenderTarget(renderer, NULL);
 		SDL_RenderCopy(renderer, texture, NULL, &texture_sz);
 		SDL_RenderPresent(renderer);
@@ -495,190 +569,50 @@ void Maze::AStarSearch(Pair src, Pair dest)
 		 // To store the 'g', 'h' and 'f' of the 8 successors 
 		double gNew, hNew, fNew;
 
-		//----------- 1st Successor (North) ------------ 
-
 		// Only process this cell if this is a valid one 
-		if (isValid(i - 1, j) == true) {
-			// If the destination cell is the same as the 
-			// current successor 
-			if (isDestination(i - 1, j, dest) == true) {
-				// Set the Parent of the destination cell 
-				cellDetails[i - 1][j].parent_i = i;
-				cellDetails[i - 1][j].parent_j = j;
-				printf("The destination cell is found\n");
-				tracePath(cellDetails, dest);
-				foundDest = true;
-				return;
-			}
-			// If the successor is already on the closed 
-			// list or if it is blocked, then ignore it. 
-			// Else do the following 
-			else if (closedList[i - 1][j] == false &&
-				isUnBlocked(i - 1, j) == true) {
-				gNew = cellDetails[i][j].g + 1.0;
-				hNew = calculateHValue(i - 1, j, dest);
-				fNew = gNew + hNew;
+		//----------- (North - South) ------------ 
+		for (const Pair& dir : coords) {
+			uint32_t dirX = dir.first;
+			uint32_t dirY = dir.second;
 
-				// If it isn’t on the open list, add it to 
-				// the open list. Make the current square 
-				// the parent of this square. Record the 
-				// f, g, and h costs of the square cell 
-				//                OR 
-				// If it is on the open list already, check 
-				// to see if this path to that square is better, 
-				// using 'f' cost as the measure. 
-				if (cellDetails[i - 1][j].f == FLT_MAX ||
-					cellDetails[i - 1][j].f > fNew) {
-					openList.insert(std::make_pair(fNew,
-						std::make_pair(i - 1, j)));
-
-					// Update the details of this cell 
-					cellDetails[i - 1][j].f = fNew;
-					cellDetails[i - 1][j].g = gNew;
-					cellDetails[i - 1][j].h = hNew;
-					cellDetails[i - 1][j].parent_i = i;
-					cellDetails[i - 1][j].parent_j = j;
+			if (isValid(i + dirX, j + dirY) == true) {
+				// If the destination cell is the same as the 
+				// current successor 
+				if (isDestination(i + dirX, j + dirY, dest) == true) {
+					// Set the Parent of the destination cell 
+					cellDetails[i + dirX][j + dirY].parent_i = i;
+					cellDetails[i + dirX][j + dirY].parent_j = j;
+					printf("The destination cell is found\n");
+					tracePath(cellDetails, dest);
+					foundDest = true;
+					return;
 				}
-			}
-		}
+				// If the successor is already on the closed 
+				// list or if it is blocked, then ignore it. 
+				// Else do the following 
+				else if (closedList[i + dirX][j + dirY] == false && isUnBlocked(i + dirX, j + dirY) == true) {
+					gNew = cellDetails[i][j].g + getCellCost(i + dirX, j + dirY);
+					hNew = calculateHValue(type, i + dirX, j + dirY, dest);
+					fNew = gNew + hNew;
 
-		//----------- 2nd Successor (South) ------------ 
+					// If it isn’t on the open list, add it to 
+					// the open list. Make the current square 
+					// the parent of this square. Record the 
+					// f, g, and h costs of the square cell 
+					//                OR 
+					// If it is on the open list already, check 
+					// to see if this path to that square is better, 
+					// using 'f' cost as the measure. 
+					if (cellDetails[i + dirX][j + dirY].f == FLT_MAX || cellDetails[i + dirX][j + dirY].f > fNew) {
+						openList.insert(std::make_pair(fNew, std::make_pair(i + dirX, j + dirY)));
 
-		// Only process this cell if this is a valid one 
-		if (isValid(i + 1, j) == true) {
-			// If the destination cell is the same as the 
-			// current successor 
-			if (isDestination(i + 1, j, dest) == true) {
-				// Set the Parent of the destination cell 
-				cellDetails[i + 1][j].parent_i = i;
-				cellDetails[i + 1][j].parent_j = j;
-				printf("The destination cell is found\n");
-				tracePath(cellDetails, dest);
-				foundDest = true;
-				return;
-			}
-			// If the successor is already on the closed 
-			// list or if it is blocked, then ignore it. 
-			// Else do the following 
-			else if (closedList[i + 1][j] == false &&
-				isUnBlocked(i + 1, j) == true) {
-				gNew = cellDetails[i][j].g + 1.0;
-				hNew = calculateHValue(i + 1, j, dest);
-				fNew = gNew + hNew;
-
-				// If it isn’t on the open list, add it to 
-				// the open list. Make the current square 
-				// the parent of this square. Record the 
-				// f, g, and h costs of the square cell 
-				//                OR 
-				// If it is on the open list already, check 
-				// to see if this path to that square is better, 
-				// using 'f' cost as the measure. 
-				if (cellDetails[i + 1][j].f == FLT_MAX ||
-					cellDetails[i + 1][j].f > fNew) {
-					openList.insert(std::make_pair(fNew, std::make_pair(i + 1, j)));
-					// Update the details of this cell 
-					cellDetails[i + 1][j].f = fNew;
-					cellDetails[i + 1][j].g = gNew;
-					cellDetails[i + 1][j].h = hNew;
-					cellDetails[i + 1][j].parent_i = i;
-					cellDetails[i + 1][j].parent_j = j;
-				}
-			}
-		}
-
-		//----------- 3rd Successor (East) ------------ 
-
-		// Only process this cell if this is a valid one 
-		if (isValid(i, j + 1) == true) {
-			// If the destination cell is the same as the 
-			// current successor 
-			if (isDestination(i, j + 1, dest) == true) {
-				// Set the Parent of the destination cell 
-				cellDetails[i][j + 1].parent_i = i;
-				cellDetails[i][j + 1].parent_j = j;
-				printf("The destination cell is found\n");
-				tracePath(cellDetails, dest);
-				foundDest = true;
-				return;
-			}
-
-			// If the successor is already on the closed 
-			// list or if it is blocked, then ignore it. 
-			// Else do the following 
-			else if (closedList[i][j + 1] == false &&
-				isUnBlocked(i, j + 1) == true) {
-				gNew = cellDetails[i][j].g + 1.0;
-				hNew = calculateHValue(i, j + 1, dest);
-				fNew = gNew + hNew;
-
-				// If it isn’t on the open list, add it to 
-				// the open list. Make the current square 
-				// the parent of this square. Record the 
-				// f, g, and h costs of the square cell 
-				//                OR 
-				// If it is on the open list already, check 
-				// to see if this path to that square is better, 
-				// using 'f' cost as the measure. 
-				if (cellDetails[i][j + 1].f == FLT_MAX ||
-					cellDetails[i][j + 1].f > fNew) {
-					openList.insert(std::make_pair(fNew,
-						std::make_pair(i, j + 1)));
-
-					// Update the details of this cell 
-					cellDetails[i][j + 1].f = fNew;
-					cellDetails[i][j + 1].g = gNew;
-					cellDetails[i][j + 1].h = hNew;
-					cellDetails[i][j + 1].parent_i = i;
-					cellDetails[i][j + 1].parent_j = j;
-				}
-			}
-		}
-
-		//----------- 4th Successor (West) ------------ 
-
-		// Only process this cell if this is a valid one 
-		if (isValid(i, j - 1) == true) {
-			// If the destination cell is the same as the 
-			// current successor 
-			if (isDestination(i, j - 1, dest) == true) {
-				// Set the Parent of the destination cell 
-				cellDetails[i][j - 1].parent_i = i;
-				cellDetails[i][j - 1].parent_j = j;
-				printf("The destination cell is found\n");
-				tracePath(cellDetails, dest);
-				foundDest = true;
-				return;
-			}
-
-			// If the successor is already on the closed 
-			// list or if it is blocked, then ignore it. 
-			// Else do the following 
-			else if (closedList[i][j - 1] == false &&
-				isUnBlocked(i, j - 1) == true) {
-				gNew = cellDetails[i][j].g + 1.0;
-				hNew = calculateHValue(i, j - 1, dest);
-				fNew = gNew + hNew;
-
-				// If it isn’t on the open list, add it to 
-				// the open list. Make the current square 
-				// the parent of this square. Record the 
-				// f, g, and h costs of the square cell 
-				//                OR 
-				// If it is on the open list already, check 
-				// to see if this path to that square is better, 
-				// using 'f' cost as the measure. 
-				if (cellDetails[i][j - 1].f == FLT_MAX ||
-					cellDetails[i][j - 1].f > fNew) {
-					openList.insert(std::make_pair(fNew,
-						std::make_pair(i, j - 1)));
-
-					// Update the details of this cell 
-					cellDetails[i][j - 1].f = fNew;
-					cellDetails[i][j - 1].g = gNew;
-					cellDetails[i][j - 1].h = hNew;
-					cellDetails[i][j - 1].parent_i = i;
-					cellDetails[i][j - 1].parent_j = j;
+						// Update the details of this cell 
+						cellDetails[i + dirX][j + dirY].f = fNew;
+						cellDetails[i + dirX][j + dirY].g = gNew;
+						cellDetails[i + dirX][j + dirY].h = hNew;
+						cellDetails[i + dirX][j + dirY].parent_i = i;
+						cellDetails[i + dirX][j + dirY].parent_j = j;
+					}
 				}
 			}
 		}
