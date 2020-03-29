@@ -4,6 +4,7 @@
 #include <thread>
 #include <chrono>
 #include <set>
+#include "AStar.hpp"
 
 Maze::Maze() : texture_sz{ 0, 0, 768, 768 }, start(1, 1), end(1, 1)
 {
@@ -253,7 +254,83 @@ Graph Maze::ConstructGraph()
 }
 
 
-void Maze::CatAndMouse(const Pair& src, const Pair& dest)
+bool Maze::isValid(int row, int col)
 {
 
+	return (row >= 0) && (row < this->H) && (col >= 0) && (col < this->W);
+}
+
+
+bool Maze::isUnBlocked(int row, int col)
+{
+	if (this->maze[row][col] != Maze::wall_t::WALL)
+		return true;
+	else
+		return false;
+}
+
+// TODO: Change this so the cat just move to the first cell in the path and then the mouse move
+// And not jump right away
+void Maze::CatAndMouse()
+{
+	// Save intial position
+	Pair start = this->getStart();
+	Pair end = this->getEnd();
+
+	bool blocked = false;
+	Pair cat = this->getStart();
+	Pair mouse = this->getEnd();
+	std::set<Pair> mouse_steps;
+	mouse_steps.insert(mouse);
+
+	Pair coords[] = {
+		             Pair(-1, 0),
+		Pair(0, -1)             , Pair(0, 1),
+		             Pair(1, 0) ,
+	};
+
+	while(true) {		
+		// Check where the mouse can run:
+		blocked = true;
+		std::random_shuffle(coords, coords + 4, random_n); //  Randomise psotion
+
+		for (const Pair& off : coords) {
+			Pair future_step = mouse + off;
+			const bool is_in = mouse_steps.find(future_step) != mouse_steps.end();
+
+			if (isValid(future_step) && isUnBlocked(future_step) && !is_in) {
+				mouse = future_step;
+				mouse_steps.insert(mouse);
+				blocked = false;
+				setEnd(mouse);
+
+				this->DisplayMaze();
+				SDL_RenderPresent(renderer);
+				break;
+			}
+		}
+
+		AStar astar(this);
+		std::stack<Pair> path = astar.AStarSearch(AStar::MANHATTAN, cat, mouse);
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+		if (!path.empty()) {
+			path.pop(); // Pop our current position 
+			cat = path.top();
+			setStart(cat);
+
+			if (cat == mouse) {
+				break;
+			}
+		} else {
+			break; // No Path
+		}
+
+		this->DisplayMaze();
+		SDL_RenderPresent(renderer);
+	}
+
+	std::this_thread::sleep_for(std::chrono::seconds(1));
+	setStart(start);
+	setEnd(end);
 }

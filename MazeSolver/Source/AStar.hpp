@@ -1,20 +1,18 @@
 #pragma once
 
 #include "maze.hpp"
+#include <stack>
 
 class Maze;
 
 class AStar
 {
 public:
-	// A structure to hold the neccesary parameters 
+	// Cell detials for A*
 	struct cell
 	{
-		// Row and Column index of its parent 
-		// Note that 0 <= i <= ROW-1 & 0 <= j <= COL-1 
 		int parent_i, parent_j;
-		// f = g + h 
-		double f, g, h;
+		double f, g, h; // f = g + h 
 	};
 
 	enum distance_t
@@ -25,15 +23,11 @@ public:
 public:
 	AStar(Maze* maze);
 
-	bool isValid(int row, int col);
-
-	bool isUnBlocked(int row, int col);
-
 	bool isDestination(int row, int col, const Pair& dest);
 
-	void AStarSearch(distance_t type, const Pair& src, const Pair& dest);
+	std::stack<Pair> AStarSearch(distance_t type, const Pair& src, const Pair& dest);
 
-	void tracePath(const std::vector<std::vector<cell>>& cellDetails, const Pair& dest);
+	std::stack<Pair> tracePath(const std::vector<std::vector<cell>>& cellDetails, const Pair& dest);
 
 	double calculateHValue(distance_t type, int row, int col, const Pair& dest);
 private:

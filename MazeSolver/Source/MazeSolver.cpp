@@ -57,13 +57,17 @@ void MazeSolver::Loop()
 		}
 
 		if (r == DISJKSTRA) {
-			printf("Doing Dijsktra\n");
+			printf("Starting Dijsktra Algorithm:\n");
 			Dijsktra dijsktra(&maze);
 			dijsktra.Start(maze.getStart(), maze.getEnd());
-		} else if (r != -1) {
-			printf("Doing A*\n");
+			std::this_thread::sleep_for(std::chrono::seconds(3));
+		} else if (r == A_STAR_EUC || r == A_STAR_MAN) {
+			printf("Starting A* Algorithm:\n");
 			AStar astar(&maze);
 			astar.AStarSearch((AStar::distance_t)(r - 1), maze.getStart(), maze.getEnd());
+			std::this_thread::sleep_for(std::chrono::seconds(3));
+		} else if (r == CAT_MOUSE) {
+			maze.CatAndMouse();
 		} else {
 			maze.DisplayMaze();
 		}
@@ -92,6 +96,12 @@ void MazeSolver::HandleEvents(int& r)
 					break;
 				case 9:
 					maze.Reset();
+					break;
+				case 12:
+					r = CAT_MOUSE;
+					t = ((Text*)&menu[currentSelection * sizeof(Text)]);
+					t->setColor({ 255, 0, 0 });
+					t->render();
 					break;
 				case 0:
 					r = DISJKSTRA;

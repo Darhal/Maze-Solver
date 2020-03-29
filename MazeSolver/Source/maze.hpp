@@ -22,6 +22,11 @@ typedef std::pair<int, int> Pair;
 // Creating a shortcut for pair<int, pair<int, int>> type 
 typedef std::pair<double, std::pair<int, int>> pPair;
 
+static Pair operator+(const Pair& a, const Pair& b)
+{
+	return Pair(a.first + b.first, a.second + b.second);
+}
+
 struct SDL_Renderer;
 struct SDL_Texture;
 struct SDL_Rect;
@@ -61,7 +66,7 @@ public:
     void DisplayMaze();
 
 	// Cat & Mouse functions:
-	void CatAndMouse(const Pair& start, const Pair& end);
+	void CatAndMouse();
 
 	// Dijsktra functions:
 	Graph ConstructGraph();
@@ -94,6 +99,14 @@ public:
 	void ColorCase(SDL_Rect* rect, int row, int col, int r, int g, int b);
 
 	void ColorCase(SDL_Rect* rect, int row, int col, uint32_t color);
+
+	bool isValid(int row, int col);
+
+	bool isUnBlocked(int row, int col);
+
+	bool isValid(const Pair& cell) { return isValid(cell.first, cell.second); }
+
+	bool isUnBlocked(const Pair& cell) { return isUnBlocked(cell.first, cell.second); }
 private:
     MazeArray maze;
 	SDL_Texture* texture;
