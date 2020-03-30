@@ -2,6 +2,8 @@
 
 #include <vector>
 #include <utility>
+#include <stdint.h>
+#include <limits.h>
 
 class Graph
 {

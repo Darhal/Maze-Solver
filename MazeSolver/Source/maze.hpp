@@ -7,6 +7,8 @@
 #include <random>
 #include "graph.hpp"
 #include <SDL.h>
+#include <stdint.h>
+#include <limits.h>
 
 static uint32_t random_n(uint32_t n)
 { 

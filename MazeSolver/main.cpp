@@ -10,7 +10,7 @@
 
 using namespace std;
 
-int SDL_main(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
 	MazeSolver mazeSolv(1280, 768, 64, 64);
 

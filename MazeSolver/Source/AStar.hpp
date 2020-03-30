@@ -2,6 +2,7 @@
 
 #include "maze.hpp"
 #include <stack>
+#include <float.h>
 
 class Maze;
 
