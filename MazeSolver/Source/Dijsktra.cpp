@@ -49,6 +49,7 @@ void Dijsktra::Start(const Pair& start, const Pair& end)
 	SDL_Rect r;
 	r.w = maze->TILE_W;
 	r.h = maze->TILE_H;
+	SDL_Event event;
 
 	// For all vertices 
 	for (uint32_t count = 0; count < V - 1; count++) {
@@ -71,6 +72,8 @@ void Dijsktra::Start(const Pair& start, const Pair& end)
 				SDL_RenderPresent(maze->renderer);
 			}
 		}
+
+		SDL_PollEvent(&event);
 	}
 
 	// Construct the path on the stack:
@@ -105,6 +108,7 @@ void Dijsktra::Start(const Pair& start, const Pair& end)
 		SDL_RenderPresent(maze->renderer);
 		path.pop();
 
+		SDL_PollEvent(&event);
 		std::this_thread::sleep_for(std::chrono::milliseconds(2));
 	}
 

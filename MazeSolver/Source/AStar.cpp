@@ -152,8 +152,11 @@ std::stack<Pair> AStar::AStarSearch(distance_t type, const Pair& src, const Pair
 	SDL_Rect r;
 	r.w = maze->TILE_W;
 	r.h = maze->TILE_H;
+	SDL_Event event;
 
 	while (!openList.empty()) { // While the list is not empty
+		SDL_PollEvent(&event);
+
 		pPair p = *openList.begin(); // Get the top of the list
 		openList.erase(openList.begin()); // Remove this vertex from the open list 
 
@@ -186,7 +189,7 @@ std::stack<Pair> AStar::AStarSearch(distance_t type, const Pair& src, const Pair
 					// Set the Parent of the destination cell 
 					cells[i + dirX][j + dirY].parent_i = i;
 					cells[i + dirX][j + dirY].parent_j = j;
-					printf("The destination cell is found\n");
+					// printf("The destination cell is found\n");
 					foundDest = true;
 					res = tracePath(cells, dest);
 					return res; // return the path

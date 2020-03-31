@@ -283,13 +283,16 @@ void Maze::CatAndMouse()
 	std::set<Pair> mouse_steps;
 	mouse_steps.insert(mouse);
 
+	SDL_Event event;
+
 	Pair coords[] = {
 		             Pair(-1, 0),
 		Pair(0, -1)             , Pair(0, 1),
 		             Pair(1, 0) ,
 	};
-
-	while(true) {		
+	
+	while(true) {
+		SDL_PollEvent(&event);
 		// Check where the mouse can run:
 		blocked = true;
 		std::random_shuffle(coords, coords + 4, random_n); //  Randomise psotion
