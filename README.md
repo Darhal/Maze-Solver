@@ -18,6 +18,21 @@ find a shortest path in a randomly generated maze.
 * Mouse & Cat Simulation where the start and the end point move
 * Ability to visulaizee the algorithm execution (visisted cells, taken path) in real-time
 
+## Cells Explained:
+The maze have different cell types that have different costs:
+| Color:        | Cell:         | Cost: | Frequency: |
+| ------------- |:-------------:| -----:| ----------:|
+| White         | Empty         | 1     | 50%        |
+| Gray          | Stone         | 2     | 30%        |
+| Light Yellow  | Sand          | 3     | 15%        |
+| Light Blue    | Water         | 4     | 5%         |
+
+Start and end point:
+| Color:        | Function:     |
+| ------------- |:-------------:|
+| Red           | Start Point   |
+| Orange        | End Point     |
+
 ## Usage:
 ### Execution:
 To execute the program use `./MazeSolver size` where size is a number of cells for the maze.</br>
@@ -39,22 +54,6 @@ press enter confirm the current option and run the algorithm (The option will go
 * Borders can't be deleted or changed by default
 * You can select 'Edit Start' or 'Edit End' and then clicking on the maze to modify the start or the end point of the shortest path search
 * 'The Mouse & The cat' option will start simulating a mouse chasing a cat, both end and start point are moving till the mouse get stuck (the mouse can't walk into cells he already walked into)
-
-
-## Cells Explained:
-The maze have different cell types that have different costs:
-| Color:        | Cell:         | Cost: | Frequency: |
-| ------------- |:-------------:| -----:| ----------:|
-| White         | Empty         | 1     | 50%        |
-| Gray          | Stone         | 2     | 30%        |
-| Light Yellow  | Sand          | 3     | 15%        |
-| Light Blue    | Water         | 4     | 5%         |
-
-Start and end point:
-| Color:        | Function:     |
-| ------------- |:-------------:|
-| Red           | Start Point   |
-| Orange        | End Point     |
 
  ## Some Pictures:
  
