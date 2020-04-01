@@ -1,5 +1,8 @@
 # Maze Solver - IA Project
 
+## GitHub Link:
+https://github.com/Darhal/Maze-Solver
+
 ## General Overview:
 * The Project is written using C++11 and SDL2 library for display, its demonstrates the usage of Dijkstra and A* alogrithm to 
 find a shortest path in a randomly generated maze.
