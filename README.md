@@ -55,5 +55,15 @@ press enter confirm the current option and run the algorithm (The option will go
 * You can select 'Edit Start' or 'Edit End' and then clicking on the maze to modify the start or the end point of the shortest path search
 * 'The Mouse & The cat' option will start simulating a mouse chasing a cat, both end and start point are moving till the mouse get stuck (the mouse can't walk into cells he already walked into)
 
- ## Some Pictures:
+## Compilation:
+### Windows:
+1. Open the .sln file with visual studio
+2. Build and run the project
+3. The excutable will be in `Executable/x64/Release/MazeSolver`
+
+### Linux:
+1. Open terminal, type `make`
+2. The executeable will be in `Executable/Linux/MazeSolver`
+
+## Some Pictures:
  
