@@ -30,7 +30,7 @@ private:
 
 	char menu[sizeof(Text) * MAX_MENU];
 	std::string texts[MAX_MENU] = { "Dijkstra", "A* Euclidean", "A* Manhattan", "Empty Cell", "Add Wall", 
-		"Add Stone", "Add Sand", "Add Water", "Re-Generate Maze", "Clear Maze", "Edit Start", "Edit End", "Mouse & The Cat"};
+		"Add Stone", "Add Sand", "Add Water", "Re-Generate Maze", "Clear Maze", "Edit Start", "Edit End", "The Mouse & The Cat"};
 
 	SDL_Window* window;
 	SDL_Renderer* renderer;

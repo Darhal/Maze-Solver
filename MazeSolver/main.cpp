@@ -12,7 +12,14 @@ using namespace std;
 
 int main(int argc, char* argv[])
 {
-	MazeSolver mazeSolv(1280, 768, 64, 64);
+	uint32_t maze_sz = 64;
+
+	if (argc >= 2) {
+		maze_sz = atoi(argv[1]);
+		maze_sz = (maze_sz % 2 ? maze_sz + 1 : maze_sz);
+	}
+
+	MazeSolver mazeSolv(1280, 768, maze_sz, maze_sz);
 
 	mazeSolv.Init();
 

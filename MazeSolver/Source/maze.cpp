@@ -83,24 +83,17 @@ void Maze::Init(SDL_Renderer* renderer, int h, int w)
 
 void Maze::DigMaze(int r, int c, uint32_t* wall)
 {
-	// Are we out of bounds?
-	if (r < 0 || c < 0 || r >= maze.size() || c >= maze[0].size())
+	if (r < 0 || c < 0 || r >= maze.size() || c >= maze[0].size()) // bounds check
 		return;
 
-	// Are we on a wall, or on a cell that we have visited already?
-	if (maze[r][c] == wall_t::WALL || maze[r][c] == wall_t::SPACE)
+	if (maze[r][c] == wall_t::WALL || maze[r][c] == wall_t::SPACE) // Did we get visited already ?
 		return;
 
-	// The wall pointer points to the wall that we jumped over 
-	// between recursive calls.  Knock it down.
-	// (wall == NULL for the 1st invocation of this function.)
-	if (wall) {
-		*wall = getRandomCell();
+	if (wall) { // Wall is null on first call
+		*wall = getRandomCell(); // A wall we jumped over, set it to random cell (empty,stone, sand or water)
 	}
 
-	// Dig this cell.
-	maze[r][c] = getRandomCell();
-	// this->DisplayMaze();
+	maze[r][c] = getRandomCell(); // Dig this cell.
 
 	// Randomly decide the order in which we explore the directions
 	// N, S, E, W.  We use STL's random_shuffle() to shuffle an array.
@@ -131,7 +124,6 @@ void Maze::DigMaze(int r, int c, uint32_t* wall)
 			wall = &maze[r][c + 1];
 			break;
 		default:
-			// std::cerr << "unknown direction" << std::endl;
 			exit(1);
 		}
 
@@ -149,14 +141,6 @@ void Maze::BuildMaze()
 	size_t maxCol = maze[0].size() - 2;
 
 	// Initialize the maze matrix m in alternating walls and cells
-	// like this:
-	//
-	//      #########
-	//      #.#.#.#.# 
-	//      #########
-	//      #.#.#.#.# 
-	//      #########
-	//
 	for (int r = minRow; r <= maxRow; r += 2) {
 		for (int c = minCol; c <= maxCol; c += 2) {
 			maze[r][c] = wall_t::TRACE;
@@ -211,6 +195,7 @@ void Maze::ColorCase(SDL_Rect* rect, int row, int col, uint32_t color)
 	);
 }
 
+// Get 2D coordinate from 1D coordinate
 std::pair<uint32_t, uint32_t> Maze::Get2DCoord(uint32_t coord)
 {
 	std::pair<uint32_t, uint32_t> p;
@@ -219,6 +204,7 @@ std::pair<uint32_t, uint32_t> Maze::Get2DCoord(uint32_t coord)
 	return p;
 }
 
+// Convert the maze into a graph
 Graph Maze::ConstructGraph()
 {
 	Graph graph(H * W);
@@ -253,14 +239,14 @@ Graph Maze::ConstructGraph()
 	return graph;
 }
 
-
+// Is cell valid
 bool Maze::isValid(int row, int col)
 {
 
 	return (row >= 0) && (row < this->H) && (col >= 0) && (col < this->W);
 }
 
-
+// Is cell blocked
 bool Maze::isUnBlocked(int row, int col)
 {
 	if (this->maze[row][col] != Maze::wall_t::WALL)
@@ -269,8 +255,7 @@ bool Maze::isUnBlocked(int row, int col)
 		return false;
 }
 
-// TODO: Change this so the cat just move to the first cell in the path and then the mouse move
-// And not jump right away
+// Simulate Cat and Mouse
 void Maze::CatAndMouse()
 {
 	// Save intial position
