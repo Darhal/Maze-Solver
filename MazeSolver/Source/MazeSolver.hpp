@@ -35,6 +35,7 @@ private:
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 	TTF_Font* font;
+	Text* current_cell;
 	SDL_Event event;
 	Maze maze;
 	int currentSelection = 0;

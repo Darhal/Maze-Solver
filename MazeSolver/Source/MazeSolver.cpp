@@ -4,6 +4,10 @@
 #include <thread>
 #include <chrono>
 
+#if defined(_MSC_VER )
+#pragma warning(disable:4996)
+#endif
+
 MazeSolver::MazeSolver(int Window_W, int Window_H, int Maze_W, int Maze_H) :
 	window(NULL), renderer(NULL), event(), maze(), currentSelection(0),
 	Window_H(Window_H), Window_W(Window_W), MAZE_W(Maze_W), MAZE_H(Maze_H),
@@ -50,13 +54,19 @@ void MazeSolver::Loop()
 	Text text(renderer, font_small, "Use (UP) and (DOWN) arrow to navigate the menu, Press (ENTER) to", 0, 0);
 	SDL_Rect& txt_rct1 = text.getRect();
 	txt_rct1.x = maze.getRect().w;
-	txt_rct1.y = Window_H - txt_rct1.h;
 
 	Text text2(renderer, font_small, "execute the current option, or click on the maze to modify its elements.", 0, 0);
 	SDL_Rect& txt_rct2 = text2.getRect();
 	txt_rct2.x = maze.getRect().w;
 	txt_rct2.y = Window_H - txt_rct2.h;
-	txt_rct1.y = Window_H - (txt_rct1.h + txt_rct2.h);
+
+	current_cell = new Text(renderer, font_small, "Current Cell (0, 0)", 0, 0);
+	SDL_Rect& txt_rct3 = current_cell->getRect();
+	txt_rct3.x = Window_W - txt_rct3.w;
+	txt_rct3.y = Window_H - txt_rct3.h;
+
+	txt_rct2.y = Window_H - (txt_rct3.h + txt_rct3.h);
+	txt_rct1.y = Window_H - (txt_rct1.h + txt_rct2.h + txt_rct3.h);
 	
 	((Text*)&menu[currentSelection * sizeof(Text)])->setColor({ 0, 255, 0 });
 	bool run = true;
@@ -96,9 +106,11 @@ void MazeSolver::Loop()
 
 		text.render();
 		text2.render();
+		current_cell->render();
 		SDL_RenderPresent(renderer);
 	}
 
+	delete current_cell;
 	// Close small font
 	TTF_CloseFont(font_small);
 }
@@ -193,6 +205,14 @@ void MazeSolver::HandleEvents(int& r)
 			maze.SetCell(Maze::WATER, event.motion.x / divX, event.motion.y / divY);
 		}
 	}
+
+	int divX = (maze.getRect().w / maze.GetW());
+	int divY = (maze.getRect().h / maze.GetH());
+	int cur_cellX = event.motion.x / divX;
+	int cur_cellY = event.motion.y / divY;
+	char text[512];
+	sprintf(text, "Current Cell(%d, %d)\0", cur_cellX, cur_cellY);
+	current_cell->setText(text);
 }
 
 void MazeSolver::Clean()

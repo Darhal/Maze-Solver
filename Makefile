@@ -6,7 +6,7 @@ BUILD_PATH = Build
 BIN_PATH = Executable/Linux/
 
 # executable #
-BIN_NAME = Maze_Solver
+BIN_NAME = MazeSolver
 
 # extensions #
 SRC_EXT = cpp
