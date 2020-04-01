@@ -3,10 +3,10 @@ CXX ?= g++
 # path #
 SRC_PATH = $(shell pwd)
 BUILD_PATH = Build
-BIN_PATH = Executable/Linux/
+BIN_PATH = Executable/Linux
 
 # executable #
-BIN_NAME = MazeSolver
+BIN_NAME = MazeSolv
 
 # extensions #
 SRC_EXT = cpp
