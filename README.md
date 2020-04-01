@@ -1,4 +1,4 @@
-# Maze Solver IA - Project
+# Maze Solver - IA Project
 
 ## General Overview:
 * The Project is written using C++11 and SDL2 library for display, its demonstrates the usage of Dijkstra and A* alogrithm to 
