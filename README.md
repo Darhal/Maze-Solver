@@ -67,7 +67,7 @@ press enter confirm the current option and run the algorithm (The option will go
 
 ## Some Pictures:
  ![alt text](https://i.imgur.com/VGKvVRS.png)
- ![alt text]("https://i.imgur.com/q2KBGSj.png")
- ![alt text]("https://i.imgur.com/VgDobGT.png")
- ![alt text]("https://i.imgur.com/YGlQylp.png")
- ![alt text]("https://i.imgur.com/eS7tr1g.png")
+ ![alt text](https://i.imgur.com/q2KBGSj.png)
+ ![alt text](https://i.imgur.com/VgDobGT.png)
+ ![alt text](https://i.imgur.com/YGlQylp.png)
+ ![alt text](https://i.imgur.com/eS7tr1g.png)
