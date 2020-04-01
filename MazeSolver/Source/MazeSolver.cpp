@@ -1,4 +1,4 @@
-#include "MazeSolver.hpp"
+﻿#include "MazeSolver.hpp"
 #include "AStar.hpp"
 #include "Dijsktra.hpp"
 #include <thread>
@@ -13,6 +13,7 @@ MazeSolver::MazeSolver(int Window_W, int Window_H, int Maze_W, int Maze_H) :
 
 void MazeSolver::Init()
 {
+	// Init SDL
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
 		exit(3);
@@ -23,12 +24,15 @@ void MazeSolver::Init()
 
 	window = SDL_CreateWindow("AI Project", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, Window_W, Window_H, SDL_WINDOW_RESIZABLE);
 	renderer = SDL_CreateRenderer(window, -1, 0);
-	font = TTF_OpenFont("Assets/arial.ttf", 48);
+	font = TTF_OpenFont("Assets/arial.ttf", 46);
+	TTF_SetFontHinting(font, TTF_HINTING_MONO);
+
 	maze.Init(renderer, MAZE_H, MAZE_W);
 }
 
 void MazeSolver::Loop()
 {
+	// Menu items
 	for (uint32_t i = 0, j = 0; i < sizeof(Text) * MAX_MENU; i += sizeof(Text), j++) {
 		Text* text = new (&menu[i]) Text(renderer, font, texts[j], 0, 25);
 		SDL_Rect& txt_rct = text->getRect();
@@ -39,6 +43,20 @@ void MazeSolver::Loop()
 			txt_rct.y = r.h + r.y;
 		}
 	}
+
+	TTF_Font* font_small = TTF_OpenFont("Assets/arial.ttf", 16);
+	TTF_SetFontHinting(font_small, TTF_HINTING_MONO);
+
+	Text text(renderer, font_small, "Use (UP) and (DOWN) arrow to navigate the menu, Press (ENTER) to", 0, 0);
+	SDL_Rect& txt_rct1 = text.getRect();
+	txt_rct1.x = maze.getRect().w;
+	txt_rct1.y = Window_H - txt_rct1.h;
+
+	Text text2(renderer, font_small, "execute the current option, or click on the maze to modify its elements.", 0, 0);
+	SDL_Rect& txt_rct2 = text2.getRect();
+	txt_rct2.x = maze.getRect().w;
+	txt_rct2.y = Window_H - txt_rct2.h;
+	txt_rct1.y = Window_H - (txt_rct1.h + txt_rct2.h);
 	
 	((Text*)&menu[currentSelection * sizeof(Text)])->setColor({ 0, 255, 0 });
 	bool run = true;
@@ -76,8 +94,13 @@ void MazeSolver::Loop()
 			((Text*)&menu[i])->render();
 		}
 
+		text.render();
+		text2.render();
 		SDL_RenderPresent(renderer);
 	}
+
+	// Close small font
+	TTF_CloseFont(font_small);
 }
 
 void MazeSolver::HandleEvents(int& r)

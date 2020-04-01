@@ -174,7 +174,7 @@ void Maze::DisplayMaze()
 
 void Maze::SetCell(wall_t type, int row, int col)
 {
-	if (row < maze.size() && col < maze[0].size())
+	if (row < maze.size() - 2 && col < maze[0].size() - 2 && (row != 0 && col != 0))
 		maze[row][col] = type;
 }
 
