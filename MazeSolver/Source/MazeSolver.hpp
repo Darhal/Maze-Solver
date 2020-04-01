@@ -25,6 +25,8 @@ public:
 	void HandleEvents(int& res);
 
 	void Clean();
+
+	void TextRendering();
 private:
 	constexpr static int MAX_MENU = 13;
 

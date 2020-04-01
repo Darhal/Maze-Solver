@@ -48,10 +48,10 @@ void MazeSolver::Loop()
 		}
 	}
 
-	TTF_Font* font_small = TTF_OpenFont("Assets/arial.ttf", 16);
+	TTF_Font* font_small = TTF_OpenFont("Assets/arial.ttf", 14);
 	TTF_SetFontHinting(font_small, TTF_HINTING_MONO);
 
-	Text text(renderer, font_small, "Use (UP) and (DOWN) arrow to navigate the menu, Press (ENTER) to", 0, 0);
+	Text text(renderer, font_small, "Use (UP) and (DOWN) arrow to navigate the menu, Press (ENTER) to ", 0, 0);
 	SDL_Rect& txt_rct1 = text.getRect();
 	txt_rct1.x = maze.getRect().w;
 
@@ -60,13 +60,13 @@ void MazeSolver::Loop()
 	txt_rct2.x = maze.getRect().w;
 	txt_rct2.y = Window_H - txt_rct2.h;
 
-	current_cell = new Text(renderer, font_small, "Current Cell (0, 0)", 0, 0);
+	current_cell = new Text(renderer, font_small, "Current Cell ( 0, 0 )", 0, 0);
 	SDL_Rect& txt_rct3 = current_cell->getRect();
 	txt_rct3.x = Window_W - txt_rct3.w;
 	txt_rct3.y = Window_H - txt_rct3.h;
 
-	txt_rct2.y = Window_H - (txt_rct3.h + txt_rct3.h);
-	txt_rct1.y = Window_H - (txt_rct1.h + txt_rct2.h + txt_rct3.h);
+	txt_rct2.y = Window_H - (txt_rct3.h + txt_rct3.h + 5);
+	txt_rct1.y = Window_H - (txt_rct1.h + txt_rct2.h + txt_rct3.h + 5);
 	
 	((Text*)&menu[currentSelection * sizeof(Text)])->setColor({ 0, 255, 0 });
 	bool run = true;
@@ -97,6 +97,9 @@ void MazeSolver::Loop()
 		} else if (r == CAT_MOUSE) {
 			maze.CatAndMouse();
 		} else {
+			SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+			SDL_RenderClear(renderer);
+
 			maze.DisplayMaze();
 		}
 
@@ -210,9 +213,19 @@ void MazeSolver::HandleEvents(int& r)
 	int divY = (maze.getRect().h / maze.GetH());
 	int cur_cellX = event.motion.x / divX;
 	int cur_cellY = event.motion.y / divY;
-	char text[512];
-	sprintf(text, "Current Cell(%d, %d)\0", cur_cellX, cur_cellY);
-	current_cell->setText(text);
+
+	if (cur_cellX >= 0 && cur_cellX < maze.GetW() && cur_cellY >= 0 && cur_cellY < maze.GetH()) {
+		char text[512];
+		sprintf(text, "Current Cell: ( %d, %d )", cur_cellX, cur_cellY);
+		current_cell->setText(text);
+		current_cell->setColor({ 255, 255, 255 });
+		SDL_Rect& txt_rct3 = current_cell->getRect();
+		txt_rct3.x = Window_W - txt_rct3.w;
+		txt_rct3.y = Window_H - txt_rct3.h;
+	} else {
+		current_cell->setColor({255, 0, 0});
+	}
+
 }
 
 void MazeSolver::Clean()

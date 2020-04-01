@@ -43,7 +43,7 @@ inline Text::Text(SDL_Renderer* renderer, TTF_Font* font, const std::string& tex
 inline void Text::setColor(const SDL_Color& color)
 {
 	SDL_DestroyTexture(texture);
-
+	TTF_SetFontHinting(font, TTF_HINTING_MONO);
 	SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);
 	texture = SDL_CreateTextureFromSurface(renderer, surface);
 	SDL_FreeSurface(surface);
@@ -53,11 +53,16 @@ inline void Text::setColor(const SDL_Color& color)
 
 inline void Text::setText(const std::string& text)
 {
+	TTF_SetFontHinting(font, TTF_HINTING_MONO);
 	SDL_Surface* surface = TTF_RenderText_Solid(font, text.c_str(), color);
+	SDL_DestroyTexture(texture);
 	texture = SDL_CreateTextureFromSurface(renderer, surface);
 	SDL_FreeSurface(surface);
 
 	this->text = text;
+	int texW = 0;
+	int texH = 0;
+	SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
 }
 
 inline void Text::render()
