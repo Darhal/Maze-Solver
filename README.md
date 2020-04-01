@@ -66,4 +66,8 @@ press enter confirm the current option and run the algorithm (The option will go
 2. The executeable will be in `Executable/Linux/MazeSolver`
 
 ## Some Pictures:
- 
+ ![alt text](https://imgur.com/VGKvVRS)
+ ![alt text](https://imgur.com/q2KBGSj)
+ ![alt text](https://imgur.com/VgDobGT)
+ ![alt text](https://imgur.com/YGlQylp)
+ ![alt text](https://imgur.com/eS7tr1g)
