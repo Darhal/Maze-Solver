@@ -42,7 +42,7 @@ To execute the program use `./MazeSolver size` where size is a number of cells f
 **PLEASE NOTE:** that since the maze is generated randomly using recursive function, the bigger your maze size is the higher the risk of getting stack overflow error
 
 *Example of execution*:
-`./MazeSolver 16` will generate a 16x16 maze
+`./MazeSolver 16` (or `./MazeSolv 16` if you're using linux) will generate a 16x16 maze
 
 ### During execution:
 * During execution the maze will be displayed on the left and the menu will be on the right. Use ↑ and ↓ to navigate the menu, 
@@ -66,7 +66,8 @@ press enter confirm the current option and run the algorithm (The option will go
 
 ### Linux:
 1. Open terminal, type `make`
-2. The executeable will be in `Executable/Linux/MazeSolver`
+2. The executeable will be in `Executable/Linux/MazeSolv`
+3. Run `./MazeSolv size`
 
 ## Some Pictures:
  ![alt text](https://i.imgur.com/VGKvVRS.png)
